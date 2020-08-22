@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+
+<html>
+
+   <head>
+      <title>URL Shortener</title>
+      <link rel="shortcut icon" href="https://cdn.hyperdev.com/us-east-1%3A52a203ff-088b-420f-81be-45bf559d01b1%2Ffavicon.ico" type="image/x-icon"/>
+      <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+      <link href="/public/style.css" rel="stylesheet" type="text/css">
+   </head>
+
+   <body>
+      <div class="container">
+        <h2>Project: URL Shortener Microservice and API</h2>
+        <h3>How it works: </h3>
+        <ol>
+          <li>I can POST a URL to <code>https://reagan-urlshort.glitch.me/api/shorturl/new</code> and I will receive a shortened URL in the JSON response.<br>Example : <code>{"original_url":"www.google.com","short_url":1}</code></li>
+          <li>If I pass an invalid URL that doesn't follow the <code>http(s)://www.example.com(/more/routes)</code> format, the JSON response will contain an error like <code>{"error":"invalid URL"}</code><br>
+          </li>
+          <li>When I visit the shortened URL, it will redirect me to my original link.</li>
+        </ol>
+      </div>
+      <div class="footer">
+        <p>
+          on <a href="https://www.glitch.com">Glich</a>
+        </p>
+      </div>
+   </body>
+
+
+</html>
