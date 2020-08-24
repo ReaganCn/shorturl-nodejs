@@ -27,6 +27,7 @@ const resolveUrls = (userUrlArray, res) => {
         if(url._id.toString() === userUrl._id ){
             let newurl = {...url}
             newurl._doc.custom = userUrl.custom;
+            newurl._doc.dateCreated = url.createdAt
             matching.unshift(newurl._doc); 
         }
       }
@@ -37,11 +38,7 @@ const resolveUrls = (userUrlArray, res) => {
   .catch(err => res.status(500).json(err));
 }
 
-
-//let items =[{"hits":0,"createdAt":"2020-08-18T08:23:44.720Z","_id":"5f3b90441437160a0b0a522b"},{"hits":0,"createdAt":"2020-08-18T08:25:37.691Z","_id":"5f3b90aa80a5ad0ae4b8bf75"},{"hits":0,"createdAt":"2020-08-18T08:57:11.435Z","_id":"5f3b99f7c382730ba261e504"},{"hits":0,"createdAt":"2020-08-18T09:10:56.093Z","_id":"5f3b99f7c382730ba261e504"},{"hits":0,"createdAt":"2020-08-18T09:37:36.473Z","_id":"5f3ba09010e5341b5578e9f1"},{"hits":0,"createdAt":"2020-08-18T09:37:36.473Z","_id":"5f3ba09010e5341b5578e9f1"},{"hits":0,"createdAt":"2020-08-18T09:39:05.782Z","_id":"5f3ba09010e5341b5578e9f1"}]
-
 router.get("/", (req, res) => {
-  
   usersModel
     .find({})
     .then(doc => {
