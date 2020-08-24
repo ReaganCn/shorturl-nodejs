@@ -18,7 +18,7 @@ const checkUserName = (username, callback) => {
 
 //resolve url ids
 
-const resolveUrls = (userUrlArray, res) => {
+const resolveUrls = (userUrlArray, res, expiryDays) => {
   urlModel.find({})
   .then(doc => {
     let matching = [];
@@ -27,7 +27,8 @@ const resolveUrls = (userUrlArray, res) => {
         if(url._id.toString() === userUrl._id ){
             let newurl = {...url}
             newurl._doc.custom = userUrl.custom;
-            newurl._doc.dateCreated = url.createdAt
+            newurl._doc.dateCreated = userUrl.createdAt
+            newurl._doc.expiresIn = getExpiryDays(userUrl.createdAt, expiryDays)
             matching.unshift(newurl._doc); 
         }
       }
@@ -37,6 +38,14 @@ const resolveUrls = (userUrlArray, res) => {
   
   .catch(err => res.status(500).json(err));
 }
+
+const getExpiryDays = (created, expiryDays) => {
+    let createdDate = new Date(created);
+    let newDate = Date.now();
+    const difference = newDate - createdDate.getTime();
+    const daysRemaining = expiryDays - difference / 86400000;
+  return daysRemaining;
+};
 
 router.get("/", (req, res) => {
   usersModel
@@ -59,7 +68,7 @@ router.get("/links", (req, res) => {
       if (!doc || doc.length === 0) {
         res.status(500).json({ err: "Cannot find user" });
       } else {
-        resolveUrls(doc.linksShortened, res)
+        resolveUrls(doc.linksShortened, res, doc.linksExpiry)
       }
     })
     .catch(err => res.status(500).json(err));
@@ -117,4 +126,7 @@ router.post("/authenticate", (req, res) => {
   });
 });
 
-module.exports = router;
+module.exports = {
+  usersRoute: router,
+  getExpiryDays: getExpiryDays
+};
