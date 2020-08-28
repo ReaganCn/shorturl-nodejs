@@ -7,17 +7,17 @@ const bodyParser = require("body-parser");
 const dns = require("dns");
 const url = require("url");
 
+const session = require("express-session");
 var cors = require("cors");
 
 const urlModel = require("./models/urlsModel");
 const usersModel = require("./models/usersModel");
+const { usersRoute, getExpiryDays } = require("./routes/users");
 
 var app = express();
 
 // Basic Configuration
 var port = process.env.PORT || 3000;
-
-/** this project needs a db !! **/
 
 // mongoose.connect(process.env.DB_URI);
 mongoose
@@ -38,8 +38,20 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+app.use(session({
+  secret: "GoodStuff",
+  resave: false,
+  saveUninitialized: false
+}))
+
+
+app.use((req,res,next) => {
+  
+  return next();
+})
+
 //routes
-const usersRoute = require("./routes/users");
+//const usersRoute = require("./routes/users");
 app.use("/users", usersRoute);
 
 //Regex
@@ -62,7 +74,6 @@ app.use("/public", express.static(process.cwd() + "/public"));
 app.get("/", function(req, res) {
   res.sendFile(process.cwd() + "/views/index.html");
 });
-
 //for a random string, create a string of all the letters and numbers and generate random like
 //from an array
 
@@ -127,34 +138,17 @@ const checkShort = callback => {
 
 //find expired user link and return true/false
 
-const getExpiryDays = (created, now, expiryDays) => {
-  let createdDate = new Date(created);
-  let newDate = Date.now();
-  const difference = newDate - createdDate.getTime();
-  const daysRemaining = expiryDays - difference / 86400000;
-  return daysRemaining;
+const linkActive = daysRemaining => {
+  if (daysRemaining < 0) {
+    return false;
+  }
+  return true;
 };
 
-const resolveExpired = (name, linkid, callback) => {
-  usersModel.find({ userName: name }).then(doc => {
-    if (!doc || doc.length === 0) {
-      callback(null);
-    } else {
-      const link = doc.linksShortened.filter(item => item._id === linkid);
-      if (getExpiryDays(link.createdAt, Date.now(), doc.linksExpiry) < 0) {
-        callback(false);
-      } else {
-        callback(true);
-      }
-    }
-  });
-};
 //check if link exists on user - helper function
 const linkExists = (linkArray, id) => {
   //let newId = mongoose.Types.ObjectId(id)
   for (let link of linkArray) {
-    // console.log(link);
-
     if (link._id === id.toString()) {
       return true;
     }
@@ -206,11 +200,11 @@ const updateCustomLink = (res, id, array, customUrl) => {
 /* Get the original shorturl from custom - helper functions */
 
 //search for the custom name in the array of urls and return its id
-const getLinkId = (array, custom) => {
+const getLinkId = (array, unique) => {
   const url = array.filter(item => {
-    return item.custom === custom;
+    return item.custom === unique || item.shorturl === unique;
   });
-  // console.log(...url);
+  //console.log(...url);
   if (url.length !== 0) {
     return url[0]._id;
   }
@@ -244,6 +238,28 @@ const getCustomDoc = async (custom, callback) => {
       });
     } else {
       callback(false);
+    }
+  });
+};
+//getlinkId for non-custom urls
+
+//GetUser of link
+const getUserInfoFromLink = (input, callback, id) => {
+  usersModel.find({}).then(doc => {
+    for (let user of doc) {
+      for (let link of user.linksShortened) {
+        if (link.custom) {
+          if (link.custom === input) {
+            // console.log({custom: link.custom, input: input})
+            callback(link.createdAt, user.linksExpiry);
+          }
+        }
+        if (id) {
+          if (link._id === id.toString()) {
+            callback(link.createdAt, user.linksExpiry);
+          }
+        }
+      }
     }
   });
 };
@@ -310,22 +326,36 @@ app.post("/shorturl", function(req, res) {
 //redirect to original url
 app.get("/shorturl/:sUrl", function(req, res) {
   let sUrl = req.params.sUrl;
-  //create a function to return short url from custom -here
-  getCustomDoc(sUrl, doc => {
-    if (doc) {
-      res.status(301).redirect(doc.urlprotocol + doc.originalurl);
-    } else {
-      if (shortUrlReg.test(sUrl)) {
-        urlModel
-          .findOne({ shorturl: sUrl })
-          .then(doc =>
-            res.status(301).redirect(doc.urlprotocol + doc.originalurl)
-          )
-          .catch(err => res.json(err));
-      } else {
-        res.send({ error: "invalid URL" });
-      }
-    }
+  //function to return short url from custom -here
+
+  urlModel.find({}).then(urls => {
+    getUserInfoFromLink(
+      sUrl,
+      (date, linkTime) => {
+        if (linkActive(getExpiryDays(date, linkTime))) {
+          getCustomDoc(sUrl, doc => {
+            if (doc) {
+              res.status(301).redirect(doc.urlprotocol + doc.originalurl);
+            } else {
+              if (shortUrlReg.test(sUrl)) {
+                urlModel
+                  .findOne({ shorturl: sUrl })
+                  .then(doc =>
+                    res.status(301).redirect(doc.urlprotocol + doc.originalurl)
+                  )
+                  .catch(err => res.json(err));
+              } else {
+                res.send({ error: "invalid URL" });
+              }
+            }
+          });
+        } else {
+          res.send("Link Expired");
+        }
+        //  console.log(getLinkId(urls, sUrl))
+      },
+      getLinkId(urls, sUrl)
+    );
   });
 
   //find the user and pass it to the function before executing or find the custom url id without user
