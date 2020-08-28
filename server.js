@@ -7,6 +7,7 @@ const bodyParser = require("body-parser");
 const dns = require("dns");
 const url = require("url");
 
+const session = require("express-session");
 var cors = require("cors");
 
 const urlModel = require("./models/urlsModel");
@@ -17,8 +18,6 @@ var app = express();
 
 // Basic Configuration
 var port = process.env.PORT || 3000;
-
-/** this project needs a db !! **/
 
 // mongoose.connect(process.env.DB_URI);
 mongoose
@@ -38,6 +37,18 @@ app.use(cors());
 //Middlewares
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(session({
+  secret: "GoodStuff",
+  resave: false,
+  saveUninitialized: false
+}))
+
+
+app.use((req,res,next) => {
+  
+  return next();
+})
 
 //routes
 //const usersRoute = require("./routes/users");
