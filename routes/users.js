@@ -112,6 +112,8 @@ router.post("/update", (req, res) => {
 });
 
 router.post("/authenticate", (req, res) => {
+        //  req.session.username = req.body.username;
+      //  console.log(req.session)
   usersModel.findOne({ userName: req.body.username }, (err, user) => {
     //if (err) throw err;
     if (user) {
@@ -119,6 +121,10 @@ router.post("/authenticate", (req, res) => {
       user.comparePassword(req.body.password, (err, isMatch) => {
         if (err) throw err;
         res.json(isMatch);
+        if (isMatch){
+        req.session.username = req.body.username;
+        console.log(req.session)
+        }
       });
     } else {
       res.json({ err: "User not found. Sign Up instead?" });
