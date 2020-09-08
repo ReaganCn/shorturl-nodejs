@@ -6,6 +6,7 @@ var mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const dns = require("dns");
 const url = require("url");
+const passport = require("passport");
 
 const session = require("express-session");
 var cors = require("cors");
@@ -35,8 +36,7 @@ mongoose
 app.use(cors());
 
 //Middlewares
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+
  
 // - sessions
 app.use(session({
@@ -44,12 +44,13 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }))
+// - authentication
+app.use(passport.initialize())
+app.use(passport.session());
+require("./passportConfig")(passport)
 
-
-app.use((req,res,next) => {
-  
-  return next();
-})
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 //routes
 //const usersRoute = require("./routes/users");
