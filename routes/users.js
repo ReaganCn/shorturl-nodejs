@@ -127,15 +127,19 @@ router.post("/authenticate", (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
     if (err) throw err;
     if (!user) {
-       res.send({authenticated: false});
+      res.send({ authenticated: false });
     } else {
       req.logIn(user, err => {
         if (err) throw err;
-        console.log("User authenticated: " + user);
-        res.send({authenticated: true, user:user});
+        res.send(req.user);
       });
     }
   })(req, res, next);
+});
+
+router.get("/user", (req, res) => {
+  res.status(200).send(req.user || {authentication : "Failed"});
+  //console.log(req.user)
 });
 
 module.exports = {
