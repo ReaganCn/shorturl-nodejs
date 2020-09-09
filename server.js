@@ -6,6 +6,7 @@ var mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const dns = require("dns");
 const url = require("url");
+const cookieParser = require("cookie-parser");
 const passport = require("passport");
 
 const session = require("express-session");
@@ -33,24 +34,36 @@ mongoose
   })
   .catch(err => console.log(err));
 
-app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.use(
+  cors({
+    origin: "http://localhost:8080",
+    credentials: true,
+  })
+);
 
 //Middlewares
 
- 
 // - sessions
-app.use(session({
-  secret: "GoodStuff",
-  resave: false,
-  saveUninitialized: false
-}))
-// - authentication
-app.use(passport.initialize())
-app.use(passport.session());
-require("./passportConfig")(passport)
+app.use(
+  session({
+    cookie: {
+      sameSite: "none",
+      secure: false,
+    },
+    secret: "goodstuff",
+    resave: false,
+    saveUninitialized: false
+  })
+);
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+
+// - authentication
+app.use(passport.initialize());
+app.use(passport.session());
+require("./passportConfig")(passport);
 
 //routes
 //const usersRoute = require("./routes/users");
