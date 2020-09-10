@@ -142,6 +142,11 @@ router.get("/user", (req, res) => {
   //console.log(req.user)
 });
 
+router.get("/user/logout", async (req, res)=> {
+  await req.logOut();
+  res.send({logout: true});
+})
+
 module.exports = {
   usersRoute: router,
   getExpiryDays: getExpiryDays
