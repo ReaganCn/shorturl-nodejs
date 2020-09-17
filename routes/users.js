@@ -107,17 +107,20 @@ router.post("/update", (req, res) => {
   const updateUser = async () => {
     let user = await usersModel.findOne({ userName: req.body.username });
     if (user) {
+      if(req.body.password && req.body.firstname){
       user.firstName = req.body.firstname;
       user.password = req.body.password;
+      }else if(req.body.firstname){
+        user.firstName = req.body.firstname;
+      } else if(req.body.password ){
+        user.password = req.body.password;
+      }
       await user.save();
-      const updatedUser = await usersModel.find({
-        userName: req.body.username
-      });
-      res
+      res 
         .status(201)
-        .json({ user: updatedUser, msg: "User Updated Successfully" });
+        .json({ user: await user, msg: "User Updated Successfully" });
     } else {
-      res.status(500).json({ err: "Internal Server Error" });
+      res.status(500).json({ err: "User not found" });
     }
   };
   updateUser();
