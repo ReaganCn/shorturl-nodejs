@@ -86,7 +86,7 @@ If it does not...add http to it and save to db
 //serve static files
 app.use("/public", express.static(process.cwd() + "/public"));
 
-app.get("/", function(req, res) {
+app.get("/home", function(req, res) {
   res.sendFile(process.cwd() + "/views/index.html");
 });
 //for a random string, create a string of all the letters and numbers and generate random like
@@ -339,7 +339,7 @@ app.post("/shorturl", function(req, res) {
 });
 
 //redirect to original url
-app.get("/shorturl/:sUrl", function(req, res) {
+app.get("/:sUrl", function(req, res) {
   let sUrl = req.params.sUrl;
   //function to return short url from custom -here
 
