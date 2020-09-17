@@ -1,6 +1,7 @@
 "use strict";
 
 var express = require("express");
+require("dotenv").config();
 var mongo = require("mongodb");
 var mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -16,6 +17,8 @@ const urlModel = require("./models/urlsModel");
 const usersModel = require("./models/usersModel");
 const { usersRoute, getExpiryDays } = require("./routes/users");
 
+const MONGO_URI='mongodb+srv://reagan:reagan@cluster0-2ewwt.mongodb.net/shortener?retryWrites=true&w=majority'
+
 var app = express();
 
 // Basic Configuration
@@ -23,7 +26,7 @@ var port = process.env.PORT || 3000;
 
 // mongoose.connect(process.env.DB_URI);
 mongoose
-  .connect(process.env.DB_URI, {
+  .connect(process.env.DB_URI || MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
