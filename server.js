@@ -42,7 +42,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(
   cors({
-    origin: "https://shortlyapp.netlify.app/",
+    origin: "https://shortly-project.netlify.app/",
     credentials: true,
     secure: false
   })
