@@ -42,8 +42,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(
   cors({
-    origin: "http://localhost:8080",
+    origin: "https://shortlyapp.netlify.app/",
     credentials: true,
+    secure: false
   })
 );
 
